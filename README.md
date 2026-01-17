@@ -185,3 +185,9 @@ sellmystuff/
 - Stripe Payment Links don't have a built-in "max payments" option, but the webhook ensures items are only sold once
 - The site shows all items (live and sold) - sold items are clearly marked
 - Items can be categorized and filtered by category on the public site
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
+
+See the [LICENSE](LICENSE) file for details, or visit https://www.gnu.org/licenses/gpl-3.0.html for more information about the GPL-3.0 license.
