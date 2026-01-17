@@ -1,0 +1,28 @@
+# Render Configuration File
+# This file is Render-specific and can be deleted when moving to another platform
+
+services:
+  - type: web
+    name: sell-my-stuff
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn sellmystuff.wsgi:application
+    envVars:
+      - key: SECRET_KEY
+        sync: false  # Set this in Render dashboard
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        sync: false  # Set to your Render URL
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sell-my-stuff-db
+          property: connectionString
+      - key: STRIPE_SECRET_KEY
+        sync: false  # Set in Render dashboard
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false  # Set in Render dashboard
+
+databases:
+  - name: sell-my-stuff-db
+    plan: free  # Change to paid plan for production

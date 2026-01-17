@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Items - {{ block.super }}{% endblock %}
+
+{% block content %}
+<h1>Items</h1>
+
+{% if categories %}
+    <div class="category-filters">
+        <a href="{% url 'store:item_list' %}" class="category-filter {% if not active_category %}active{% endif %}">
+            All
+        </a>
+        {% for category in categories %}
+            <a href="{% url 'store:item_list' %}?category={{ category.slug }}" class="category-filter {% if active_category == category.slug %}active{% endif %}">
+                {{ category.name }}
+            </a>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% if items %}
+    <div class="item-grid">
+        {% for item in items %}
+            <div class="item-card {% if item.status == 'SOLD' %}item-card-sold{% endif %}">
+                <a href="{% url 'store:item_detail' item.pk %}">
+                    <div class="item-image-container">
+                        {% if item.primary_image %}
+                            <img src="{{ item.primary_image.image.url }}" alt="{{ item.title }}" class="item-image">
+                        {% else %}
+                            <div class="item-image-placeholder">No Image</div>
+                        {% endif %}
+                    </div>
+                    <div class="item-card-content">
+                        <h3>{{ item.title }}</h3>
+                        <p class="item-price">${{ item.price_amount }}</p>
+                        {% if item.status == 'SOLD' %}
+                            <span class="item-badge item-badge-sold">Sold</span>
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?{% if active_category %}category={{ active_category }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+            {% endif %}
+            <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?{% if active_category %}category={{ active_category }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📦</div>
+        <h2>No items available</h2>
+        <p>Check back soon for new items!</p>
+    </div>
+{% endif %}
+{% endblock %}

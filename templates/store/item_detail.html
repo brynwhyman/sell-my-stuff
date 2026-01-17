@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.title }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="item-detail">
+    <div class="item-detail-images">
+        {% if item.images.all %}
+            <div class="item-image-main">
+                {% if item.primary_image %}
+                    <img src="{{ item.primary_image.image.url }}" alt="{{ item.title }}" loading="eager">
+                {% else %}
+                    <img src="{{ item.images.first.image.url }}" alt="{{ item.title }}" loading="eager">
+                {% endif %}
+            </div>
+            {% if item.images.count > 1 %}
+                <div class="item-image-gallery">
+                    {% for image in item.images.all %}
+                        <img src="{{ image.image.url }}" alt="{{ item.title }} - Image {{ forloop.counter }}" class="gallery-thumbnail" loading="lazy">
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="item-image-placeholder">No Image</div>
+        {% endif %}
+    </div>
+    
+    <div class="item-detail-info">
+        <h1>{{ item.title }}</h1>
+        <p class="item-price">${{ item.price_amount }}</p>
+        
+        {% if item.status == 'SOLD' %}
+            <div class="item-status item-status-sold">
+                <strong>Sold</strong>
+                {% if item.sold_at %}
+                    <span class="sold-date">(Sold on {{ item.sold_at|date:"F d, Y" }})</span>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <div class="item-description">
+            <h2>Description</h2>
+            <p>{{ item.description|linebreaks }}</p>
+        </div>
+        
+        {% if item.is_live and item.stripe_payment_link_url %}
+            <a href="{{ item.stripe_payment_link_url }}" target="_blank" class="btn btn-primary">Buy Now</a>
+            <p class="payment-note">You will be redirected to Stripe to complete your purchase.</p>
+        {% elif item.status == 'SOLD' %}
+            <p class="item-unavailable">This item has been sold.</p>
+        {% else %}
+            <p class="item-unavailable">This item is not available for purchase at this time.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
