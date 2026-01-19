@@ -11,6 +11,7 @@ urlpatterns = [
     path('', include('store.urls')),
 ]
 
-# Serve media files in development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve media files in both development and production
+# Note: For production at scale, use a CDN or separate web server
+# For free tier testing on Render, serving directly from Django is acceptable
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
