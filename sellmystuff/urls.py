@@ -14,4 +14,7 @@ urlpatterns = [
 # Serve media files in both development and production
 # Note: For production at scale, use a CDN or separate web server
 # For free tier testing on Render, serving directly from Django is acceptable
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Convert MEDIA_ROOT to absolute string path (required for static() function)
+import os
+media_root_path = os.path.abspath(str(settings.MEDIA_ROOT))
+urlpatterns += static(settings.MEDIA_URL, document_root=media_root_path)
