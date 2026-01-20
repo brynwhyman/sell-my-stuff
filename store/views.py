@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, TemplateView
 from .models import Category, Item
 
 
@@ -42,3 +42,8 @@ class ItemDetailView(DetailView):
     def get_queryset(self):
         """Allow viewing all items."""
         return Item.objects.all().prefetch_related('images')
+
+
+class HowToBuyView(TemplateView):
+    """Static page explaining how the site works and how to buy."""
+    template_name = 'store/how_to_buy.html'

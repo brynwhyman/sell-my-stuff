@@ -15,14 +15,17 @@
             <div class="container">
                 <a href="{% url 'store:item_list' %}" class="logo">Sell My Stuff</a>
                 <ul class="nav-links">
-                    <li><a href="{% url 'store:item_list' %}">Shop</a></li>
+                    <li><a href="{% url 'store:how_to_buy' %}">How to buy</a></li>
                 </ul>
             </div>
         </nav>
     </header>
 
     <div class="site-banner">
-        Use this site to buy items and then text us to arrange pick-up: 021 649 477
+        <div class="container">
+            <span class="label">Pickup only:</span>
+            <span class="text">Use this site to buy items, then text us to arrange pick-up on 021 649 477.</span>
+        </div>
     </div>
 
     <main class="container">

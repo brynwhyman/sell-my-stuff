@@ -92,6 +92,31 @@ header {
     border-bottom: 1px solid var(--color-border);
 }
 
+/* Top info banner */
+.site-banner {
+    background: #fef3c7; /* soft amber */
+    color: #92400e;
+    font-size: var(--font-size-sm);
+    border-bottom: 1px solid #fcd34d;
+    padding: 0.35rem 0;
+}
+
+.site-banner .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.site-banner span.label {
+    font-weight: 600;
+    margin-right: 0.35rem;
+}
+
+.site-banner span.text {
+    font-weight: 400;
+}
+
 nav .container {
     display: flex;
     justify-content: space-between;
