@@ -41,6 +41,7 @@ def create_payment_link_for_item(item):
     
     # Create Payment Link
     # Include item_id in metadata for webhook access
+    # Collect customer name and email for notifications
     # Note: Payment Links don't have a direct "max_payments" parameter.
     # We enforce single payment by deactivating the link after first sale via webhook.
     payment_link = stripe.PaymentLink.create(
@@ -53,6 +54,11 @@ def create_payment_link_for_item(item):
         metadata={
             'item_id': str(item.id),
         },
+        # Collect customer information (name and email)
+        # This ensures we have buyer details for email notifications
+        payment_method_collection='if_required',
+        # Enable customer creation to ensure we get name and email
+        customer_creation='if_required',
     )
     
     return (

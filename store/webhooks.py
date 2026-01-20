@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.utils import timezone
+from django.core.mail import send_mail
 from .models import Item
 from .stripe_service import deactivate_payment_link
 
@@ -127,6 +128,88 @@ def handle_checkout_session_completed(session):
         # This enforces the "one payment per item" requirement
         if item.stripe_payment_link_id:
             deactivate_payment_link(item.stripe_payment_link_id)
+        
+        # Extract buyer information for notifications
+        customer_details = session.get('customer_details', {}) or {}
+        buyer_name = customer_details.get('name') or 'Customer'
+        buyer_email = customer_details.get('email') or session.get('customer_email') or ''
+        
+        # Send email notifications (if email is configured)
+        send_sale_notifications(item, buyer_name, buyer_email)
+        logger.info(f"Item '{item.title}' sold to {buyer_name} ({buyer_email})")
     
     # If item is already SOLD, this webhook is a duplicate
     # This is expected and handled gracefully (idempotent)
+
+
+def send_sale_notifications(item, buyer_name, buyer_email):
+    """
+    Send email notifications to buyer and admin when an item is sold.
+    
+    Args:
+        item: The Item object that was sold
+        buyer_name: Name of the buyer
+        buyer_email: Email address of the buyer
+    """
+    if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
+        logger.warning("Email not configured - skipping sale notifications")
+        return
+    
+    # Email to buyer (if email provided)
+    if buyer_email:
+        try:
+            buyer_subject = f"Thanks for your purchase: {item.title}"
+            buyer_message = f"""Hello {buyer_name},
+
+Thanks for buying our stuff!
+
+Item: {item.title}
+Price: ${item.price_amount} {item.currency}
+
+Next step: Please text Julia on 021 649 477 to arrange pickup.
+
+Thanks
+J&B
+"""
+            send_mail(
+                buyer_subject,
+                buyer_message,
+                settings.DEFAULT_FROM_EMAIL,
+                [buyer_email],
+                fail_silently=False,
+            )
+            logger.info(f"Buyer notification email sent to {buyer_email}")
+        except Exception as e:
+            logger.error(f"Failed to send buyer notification email: {str(e)}")
+    
+    # Email to admin
+    admin_email = settings.ADMIN_EMAIL or settings.DEFAULT_FROM_EMAIL
+    if admin_email:
+        try:
+            admin_subject = f"Item Sold: {item.title}"
+            admin_message = f"""A new sale has been completed!
+
+Item: {item.title}
+Price: ${item.price_amount} {item.currency}
+Sold at: {item.sold_at.strftime('%Y-%m-%d %H:%M:%S') if item.sold_at else 'N/A'}
+
+Buyer Information:
+Name: {buyer_name}
+Email: {buyer_email or 'Not provided'}
+
+Reminder: buyer has been asked to text Julia on 021 649 477 to arrange pickup.
+
+View in admin: https://sell-my-stuff.onrender.com/admin/store/item/{item.id}/
+"""
+            send_mail(
+                admin_subject,
+                admin_message,
+                settings.DEFAULT_FROM_EMAIL,
+                [admin_email],
+                fail_silently=False,
+            )
+            logger.info(f"Admin notification email sent to {admin_email}")
+        except Exception as e:
+            logger.error(f"Failed to send admin notification email: {str(e)}")
+
+
