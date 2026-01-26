@@ -761,3 +761,215 @@ button:focus-visible,
     outline-offset: 2px;
 }
 
+/* ===== ITEM CREATE FORM ===== */
+.item-create-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--spacing-lg) var(--spacing-sm);
+}
+
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-base);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-white);
+    transition: border-color var(--transition-base);
+    min-height: 48px; /* Touch-friendly */
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-textarea {
+    min-height: 100px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.form-error {
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+    margin-top: var(--spacing-xs);
+}
+
+.image-upload-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.image-upload-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-md);
+}
+
+.camera-button,
+.gallery-button {
+    flex: 1;
+    min-width: 140px;
+    padding: var(--spacing-md);
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+}
+
+.camera-button:hover,
+.gallery-button:hover {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.camera-button:active,
+.gallery-button:active {
+    transform: translateY(0);
+}
+
+.file-input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.file-input-hidden {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.image-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.image-preview-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background-color: var(--color-border-light);
+    cursor: pointer;
+    transition: transform var(--transition-base);
+}
+
+.image-preview-item:hover {
+    transform: scale(1.05);
+}
+
+.image-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-preview-item .remove-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 28px;
+    height: 28px;
+    background-color: var(--color-danger);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+    z-index: 10;
+    transition: all var(--transition-base);
+}
+
+.image-preview-item .remove-btn:hover {
+    background-color: #dc2626;
+    transform: scale(1.1);
+}
+
+.image-preview-item .primary-badge {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    padding: 4px 8px;
+    background-color: var(--color-success);
+    color: white;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    z-index: 10;
+}
+
+.submit-section {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 2px solid var(--color-border);
+}
+
+.submit-button {
+    width: 100%;
+    padding: var(--spacing-md);
+    font-size: var(--font-size-lg);
+    min-height: 56px; /* Extra large for mobile */
+}
+
+/* Password check form */
+.password-check {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-sm);
+}
+
+.password-instructions {
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-lg);
+}
+
+.password-form {
+    margin-top: var(--spacing-lg);
+}
+
+@media (min-width: 640px) {
+    .item-create-form {
+        padding: var(--spacing-xl) var(--spacing-md);
+    }
+    
+    .image-preview-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+}

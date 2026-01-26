@@ -94,6 +94,11 @@ class Item(models.Model):
     def __str__(self):
         return self.title
     
+    def get_absolute_url(self):
+        """Return the URL for this item's detail page."""
+        from django.urls import reverse
+        return reverse('store:item_detail', kwargs={'pk': self.pk})
+    
     def save(self, *args, **kwargs):
         """Auto-generate slug from title if not provided."""
         if not self.slug:

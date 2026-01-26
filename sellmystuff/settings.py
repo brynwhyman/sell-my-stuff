@@ -194,6 +194,9 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@example.com')
 ADMIN_EMAIL = config('ADMIN_EMAIL', default='')  # Email address to receive sale notifications
 
+# Item upload password (simple authentication for mobile upload form)
+ITEM_UPLOAD_PASSWORD = config('ITEM_UPLOAD_PASSWORD', default='')
+
 # Email configuration (uses environment variables; works with SMTP on paid Render plans)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST', default='')

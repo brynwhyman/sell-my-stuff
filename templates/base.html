@@ -16,6 +16,9 @@
                 <a href="{% url 'store:item_list' %}" class="logo">Sell My Stuff</a>
                 <ul class="nav-links">
                     <li><a href="{% url 'store:how_to_buy' %}">How to buy</a></li>
+                    {% if request.session.item_upload_authenticated %}
+                    <li><a href="{% url 'store:item_create' %}" class="nav-link-add">Add Item</a></li>
+                    {% endif %}
                 </ul>
             </div>
         </nav>

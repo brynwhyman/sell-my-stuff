@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Item - {{ block.super }}{% endblock %}
+
+{% block extra_css %}{% endblock %}
+
+{% block content %}
+<div class="item-create-form">
+    <h1>Add New Item</h1>
+    
+    <form method="post" enctype="multipart/form-data" id="item-create-form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.title.id_for_label }}">Title *</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <div class="form-error">{{ form.title.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.price_amount.id_for_label }}">Price (NZD) *</label>
+            <div style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                <span style="font-size: var(--font-size-lg); font-weight: 600;">$</span>
+                {{ form.price_amount }}
+            </div>
+            {% if form.price_amount.errors %}
+                <div class="form-error">{{ form.price_amount.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">Description (optional)</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <div class="form-error">{{ form.description.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.category.id_for_label }}">Category (optional)</label>
+            {{ form.category }}
+            {% if form.category.errors %}
+                <div class="form-error">{{ form.category.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group image-upload-section">
+            <label>Photos *</label>
+            <p style="font-size: var(--font-size-sm); color: var(--color-text-light); margin-bottom: var(--spacing-sm);">
+                Add at least one photo. First photo will be the main image.
+            </p>
+            
+            <div class="image-upload-buttons">
+                <button type="button" class="camera-button" onclick="document.getElementById('camera-input').click()">
+                    📷 Take Photo
+                </button>
+                <button type="button" class="gallery-button" onclick="document.getElementById('gallery-input').click()">
+                    🖼️ Choose from Gallery
+                </button>
+            </div>
+            
+            <div class="file-input-wrapper">
+                <input 
+                    type="file" 
+                    id="camera-input" 
+                    accept="image/*" 
+                    capture="environment" 
+                    multiple
+                    class="file-input-hidden"
+                    onchange="handleImageSelection(event)"
+                >
+                <input 
+                    type="file" 
+                    id="gallery-input" 
+                    accept="image/*" 
+                    multiple
+                    class="file-input-hidden"
+                    onchange="handleImageSelection(event)"
+                >
+            </div>
+            
+            <div id="image-preview-container" class="image-preview-grid"></div>
+        </div>
+        
+        <div class="submit-section">
+            <button type="submit" class="btn btn-primary submit-button" id="submit-btn">Create Item</button>
+        </div>
+    </form>
+</div>
+
+<script src="{% static 'js/item_create.js' %}"></script>
+<script>
+// Handle form submission with images
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('item-create-form');
+    if (!form) return;
+    
+    form.addEventListener('submit', function(e) {
+        if (typeof selectedImages === 'undefined' || selectedImages.length === 0) {
+            e.preventDefault();
+            alert('Please add at least one photo');
+            return false;
+        }
+        
+        // Create FormData and append files
+        const formData = new FormData(form);
+        
+        // Remove any existing images from FormData
+        formData.delete('images');
+        
+        // Append all selected images
+        selectedImages.forEach((file) => {
+            formData.append('images', file);
+        });
+        
+        // Show loading state
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating...';
+        
+        // Submit the form with files using fetch
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                return response.text().then(html => {
+                    document.open();
+                    document.write(html);
+                    document.close();
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Item';
+            alert('Error creating item. Please try again.');
+        });
+        
+        e.preventDefault();
+    });
+});
+</script>
+{% endblock %}
