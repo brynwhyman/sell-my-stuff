@@ -3,12 +3,14 @@
  * Handles image selection, preview, and form submission.
  */
 
-let selectedImages = [];
+// Make selectedImages globally accessible
+var selectedImages = [];
 
 /**
  * Handle image selection from camera or gallery.
+ * Make it globally accessible for inline handlers.
  */
-function handleImageSelection(event) {
+window.handleImageSelection = function(event) {
     const files = Array.from(event.target.files);
     
     files.forEach(file => {
@@ -31,61 +33,68 @@ function handleImageSelection(event) {
     
     // Reset input so same file can be selected again
     event.target.value = '';
-}
+};
 
 /**
  * Update the image preview grid.
  */
 function updateImagePreview() {
     const container = document.getElementById('image-preview-container');
+    if (!container) return;
+    
     container.innerHTML = '';
     
     if (selectedImages.length === 0) {
         return;
     }
     
+    // Process each image with its index
     selectedImages.forEach((file, index) => {
         const reader = new FileReader();
-        reader.onload = function(e) {
-            const previewItem = document.createElement('div');
-            previewItem.className = 'image-preview-item';
-            previewItem.dataset.index = index;
-            
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.alt = 'Preview';
-            
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'remove-btn';
-            removeBtn.innerHTML = '×';
-            removeBtn.onclick = () => removeImage(index);
-            removeBtn.setAttribute('aria-label', 'Remove image');
-            
-            const primaryBadge = document.createElement('span');
-            primaryBadge.className = 'primary-badge';
-            primaryBadge.textContent = index === 0 ? 'Main' : '';
-            
-            previewItem.appendChild(img);
-            previewItem.appendChild(removeBtn);
-            if (index === 0) {
-                previewItem.appendChild(primaryBadge);
-            }
-            
-            // Make clickable to set as primary
-            previewItem.onclick = (e) => {
-                if (e.target !== removeBtn && e.target !== removeBtn.firstChild) {
-                    setPrimaryImage(index);
+        
+        // Use closure to capture the correct index
+        reader.onload = (function(fileIndex) {
+            return function(e) {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'image-preview-item';
+                previewItem.dataset.index = fileIndex;
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = 'Preview';
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '×';
+                removeBtn.onclick = function() {
+                    removeImage(fileIndex);
+                };
+                removeBtn.setAttribute('aria-label', 'Remove image');
+                
+                const primaryBadge = document.createElement('span');
+                primaryBadge.className = 'primary-badge';
+                primaryBadge.textContent = fileIndex === 0 ? 'Main' : '';
+                
+                previewItem.appendChild(img);
+                previewItem.appendChild(removeBtn);
+                if (fileIndex === 0) {
+                    previewItem.appendChild(primaryBadge);
                 }
+                
+                // Make clickable to set as primary
+                previewItem.onclick = function(e) {
+                    if (e.target !== removeBtn && e.target !== removeBtn.firstChild) {
+                        setPrimaryImage(fileIndex);
+                    }
+                };
+                
+                container.appendChild(previewItem);
             };
-            
-            container.appendChild(previewItem);
-        };
+        })(index);
+        
         reader.readAsDataURL(file);
     });
-    
-    // Update hidden input for form submission
-    updateFormInput();
 }
 
 /**

@@ -99,7 +99,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!form) return;
     
     form.addEventListener('submit', function(e) {
-        if (typeof selectedImages === 'undefined' || selectedImages.length === 0) {
+        // Check if images are selected
+        if (!window.selectedImages || window.selectedImages.length === 0) {
             e.preventDefault();
             alert('Please add at least one photo');
             return false;
@@ -112,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.delete('images');
         
         // Append all selected images
-        selectedImages.forEach((file) => {
+        window.selectedImages.forEach((file) => {
             formData.append('images', file);
         });
         
@@ -121,30 +122,50 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Creating...';
         
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
         // Submit the form with files using fetch
-        fetch(form.action, {
+        fetch(form.action || window.location.pathname, {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-            }
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin',
+            redirect: 'follow'  // Follow redirects
         })
         .then(response => {
+            // Check if response is a redirect
             if (response.redirected) {
                 window.location.href = response.url;
-            } else {
+            } else if (response.ok) {
+                // If not redirected, check the response
                 return response.text().then(html => {
-                    document.open();
-                    document.write(html);
-                    document.close();
+                    // If response contains a redirect URL in the HTML, extract it
+                    const redirectMatch = html.match(/window\.location\.href\s*=\s*["']([^"']+)["']/);
+                    if (redirectMatch) {
+                        window.location.href = redirectMatch[1];
+                    } else {
+                        // Check for item detail link in success message
+                        const itemLinkMatch = html.match(/href=["']([^"']*item\/\d+[^"']*)["']/);
+                        if (itemLinkMatch) {
+                            window.location.href = itemLinkMatch[1];
+                        } else {
+                            // Fallback: just reload to show messages
+                            window.location.reload();
+                        }
+                    }
                 });
+            } else {
+                throw new Error('Server error: ' + response.status);
             }
         })
         .catch(error => {
             console.error('Error:', error);
             submitBtn.disabled = false;
             submitBtn.textContent = 'Create Item';
-            alert('Error creating item. Please try again.');
+            alert('Error creating item: ' + error.message + '. Please check the console for details.');
         });
         
         e.preventDefault();
