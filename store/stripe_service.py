@@ -22,11 +22,13 @@ def create_payment_link_for_item(item):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     
     # Create Product with metadata containing item_id
+    # Include item ID in name for easy identification in Stripe Dashboard
     product = stripe.Product.create(
-        name=item.title,
-        description=item.description[:500],  # Stripe has description limits
+        name=f"#{item.id} - {item.title}",
+        description=item.description[:500] if item.description else f"Item #{item.id}",
         metadata={
             'item_id': str(item.id),
+            'item_title': item.title,
         }
     )
     
@@ -54,6 +56,8 @@ def create_payment_link_for_item(item):
         ],
         metadata={
             'item_id': str(item.id),
+            'item_title': item.title,
+            'django_item_id': str(item.id),  # Easy to spot in dashboard
         },
         # Collect phone number (for pickup coordination)
         phone_number_collection={
@@ -67,6 +71,16 @@ def create_payment_link_for_item(item):
                 'type': 'text',
             },
         ],
+        # Add invoice creation for better tracking in Stripe Dashboard
+        invoice_creation={
+            'enabled': True,
+            'invoice_data': {
+                'description': f"Item #{item.id} - {item.title}",
+                'metadata': {
+                    'item_id': str(item.id),
+                },
+            },
+        },
         # Enable Stripe automatic email receipts
         after_completion={
             'type': 'hosted_confirmation',
