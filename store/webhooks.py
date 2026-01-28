@@ -157,6 +157,9 @@ def send_sale_notifications(item, buyer_name, buyer_email, buyer_phone=''):
         logger.warning("Email not configured - skipping sale notifications")
         return
     
+    # Format sender with friendly name
+    from_email = f"Julia and Bryn <{settings.DEFAULT_FROM_EMAIL}>"
+    
     # Email to buyer (if email provided)
     if buyer_email:
         try:
@@ -176,7 +179,7 @@ J&B
             send_mail(
                 buyer_subject,
                 buyer_message,
-                settings.DEFAULT_FROM_EMAIL,
+                from_email,
                 [buyer_email],
                 fail_silently=False,
             )
@@ -207,7 +210,7 @@ View in admin: https://sell-my-stuff.onrender.com/admin/store/item/{item.id}/
             send_mail(
                 admin_subject,
                 admin_message,
-                settings.DEFAULT_FROM_EMAIL,
+                from_email,
                 [admin_email],
                 fail_silently=False,
             )
