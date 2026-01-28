@@ -67,6 +67,13 @@ def create_payment_link_for_item(item):
                 'type': 'text',
             },
         ],
+        # Enable Stripe automatic email receipts
+        after_completion={
+            'type': 'hosted_confirmation',
+            'hosted_confirmation': {
+                'custom_message': 'Thanks for your purchase! Please text Julia on 021 649 477 to arrange pickup.',
+            },
+        },
     )
     
     return (
