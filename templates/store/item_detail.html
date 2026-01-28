@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ item.title }} - {{ block.super }}{% endblock %}
 
@@ -6,7 +7,7 @@
 <div class="item-detail">
     <div class="item-detail-images">
         {% if item.images.all %}
-            <div class="item-image-main">
+            <div class="item-image-main" tabindex="0" role="button" aria-label="Open image fullscreen">
                 {% if item.primary_image %}
                     <img src="{{ item.primary_image.image.url }}" alt="{{ item.title }}" loading="eager">
                 {% else %}
@@ -20,6 +21,11 @@
                     {% endfor %}
                 </div>
             {% endif %}
+
+            <div id="lightbox" class="lightbox" aria-hidden="true">
+                <button type="button" class="lightbox-close" aria-label="Close image">×</button>
+                <img class="lightbox-image" src="" alt="">
+            </div>
         {% else %}
             <div class="item-image-placeholder">No Image</div>
         {% endif %}
@@ -53,4 +59,8 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/lightbox.js' %}"></script>
 {% endblock %}

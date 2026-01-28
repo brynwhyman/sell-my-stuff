@@ -409,7 +409,9 @@ h3 {
     overflow: hidden;
     background-color: var(--color-border-light);
     position: relative;
-    padding-top: 75%; /* Maintain aspect ratio */
+    /* iPhone photos are often portrait; make the main image area portrait-friendly */
+    padding-top: 125%; /* ~4:5 aspect ratio */
+    cursor: zoom-in;
 }
 
 .item-image-main img {
@@ -418,8 +420,57 @@ h3 {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     transition: opacity var(--transition-base);
+}
+
+/* ===== LIGHTBOX (image zoom) ===== */
+.lightbox {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-md);
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+}
+
+.lightbox.open {
+    display: flex;
+}
+
+.lightbox-image {
+    max-width: min(100vw - 2rem, 1200px);
+    max-height: 90vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.lightbox-close {
+    position: absolute;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.35);
+    color: white;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lightbox-close:hover {
+    background: rgba(0, 0, 0, 0.55);
 }
 
 .item-image-main img.fade-in {
@@ -682,7 +733,7 @@ footer p {
     }
     
     .item-image-main {
-        padding-top: 100%; /* Square on mobile */
+        padding-top: 125%; /* Keep portrait-friendly ratio on mobile */
     }
     
     .gallery-thumbnail {

@@ -84,14 +84,17 @@ class ItemAdmin(admin.ModelAdmin):
     
     def save_model(self, request, obj, form, change):
         """
-        Create Stripe Payment Link when item is first created.
+        Create Stripe Payment Link when item is saved.
         Only create if it doesn't already exist.
         
         The Payment Link will be automatically deactivated after the first
         successful payment via webhook to enforce single-payment limit.
         """
-        # Only create Payment Link for new items without one
-        if not change and not obj.stripe_payment_link_id:
+        # Save the item first so it has an ID
+        super().save_model(request, obj, form, change)
+        
+        # Create Payment Link if it doesn't exist and item has required fields
+        if not obj.stripe_payment_link_id and obj.title and obj.price_amount:
             try:
                 payment_link_id, payment_link_url, product_id, price_id = \
                     create_payment_link_for_item(obj)
@@ -99,6 +102,7 @@ class ItemAdmin(admin.ModelAdmin):
                 obj.stripe_payment_link_url = payment_link_url
                 obj.stripe_product_id = product_id
                 obj.stripe_price_id = price_id
+                obj.save()  # Save again with Stripe fields
                 messages.success(
                     request,
                     f'Stripe Payment Link created successfully. '
@@ -110,8 +114,6 @@ class ItemAdmin(admin.ModelAdmin):
                     f'Error creating Stripe Payment Link: {str(e)}. '
                     f'Item saved but payment link not created.'
                 )
-        
-        super().save_model(request, obj, form, change)
 
 
 @admin.register(ItemImage)

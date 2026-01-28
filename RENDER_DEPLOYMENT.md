@@ -77,6 +77,9 @@ STRIPE_WEBHOOK_SECRET=whsec_your_production_webhook_secret
 **Optional:**
 ```
 SECURE_SSL_REDIRECT=True
+
+# Simple password to protect the mobile /add-item/ upload form
+ITEM_UPLOAD_PASSWORD=some-strong-password
 ```
 
 ### Generate Secret Key:

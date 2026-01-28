@@ -32,7 +32,8 @@ class ItemCreateForm(forms.ModelForm):
     
     class Meta:
         model = Item
-        fields = ['title', 'description', 'category', 'price_amount', 'currency']
+        # Always store currency as NZD in code; no currency field on the form
+        fields = ['title', 'description', 'category', 'price_amount']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-input',
@@ -45,13 +46,18 @@ class ItemCreateForm(forms.ModelForm):
                 'step': '0.01',
                 'min': '0.01',
             }),
-            'currency': forms.Select(attrs={
-                'class': 'form-input form-select',
-            }),
         }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Set default currency to NZD
-        if not self.instance.pk:
-            self.fields['currency'].initial = 'NZD'
+    
+    def save(self, commit=True):
+        """
+        Save item with currency always set to NZD.
+        Currency is not exposed on the form.
+        """
+        instance = super().save(commit=False)
+        instance.currency = 'NZD'
+        if commit:
+            instance.save()
+        return instance

@@ -9,6 +9,28 @@
 <div class="item-create-form">
     <h1>Add New Item</h1>
     
+    {% if form.non_field_errors %}
+        <div class="alert alert-error">
+            <strong>Form errors:</strong>
+            <ul>
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    {% if form.errors %}
+        <div class="alert alert-error">
+            <strong>Please correct the following errors:</strong>
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
     <form method="post" enctype="multipart/form-data" id="item-create-form">
         {% csrf_token %}
         
@@ -54,10 +76,10 @@
             </p>
             
             <div class="image-upload-buttons">
-                <button type="button" class="camera-button" onclick="document.getElementById('camera-input').click()">
+                <button type="button" class="camera-button" onclick="openCamera()">
                     📷 Take Photo
                 </button>
-                <button type="button" class="gallery-button" onclick="document.getElementById('gallery-input').click()">
+                <button type="button" class="gallery-button" onclick="openGallery()">
                     🖼️ Choose from Gallery
                 </button>
             </div>
@@ -65,20 +87,11 @@
             <div class="file-input-wrapper">
                 <input 
                     type="file" 
-                    id="camera-input" 
-                    accept="image/*" 
-                    capture="environment" 
-                    multiple
-                    class="file-input-hidden"
-                    onchange="handleImageSelection(event)"
-                >
-                <input 
-                    type="file" 
-                    id="gallery-input" 
+                    id="images-input" 
+                    name="images"
                     accept="image/*" 
                     multiple
                     class="file-input-hidden"
-                    onchange="handleImageSelection(event)"
                 >
             </div>
             
@@ -93,20 +106,21 @@
 
 <script src="{% static 'js/item_create.js' %}"></script>
 <script>
-// Handle form submission with images
+// Handle form submission with fetch to properly send images
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('item-create-form');
     if (!form) return;
     
     form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
         // Check if images are selected
         if (!window.selectedImages || window.selectedImages.length === 0) {
-            e.preventDefault();
             alert('Please add at least one photo');
             return false;
         }
         
-        // Create FormData and append files
+        // Create FormData and append all form fields + files
         const formData = new FormData(form);
         
         // Remove any existing images from FormData
@@ -119,13 +133,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show loading state
         const submitBtn = document.getElementById('submit-btn');
+        const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
         submitBtn.textContent = 'Creating...';
         
         // Get CSRF token
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         
-        // Submit the form with files using fetch
+        // Submit with fetch
         fetch(form.action || window.location.pathname, {
             method: 'POST',
             body: formData,
@@ -133,60 +148,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 'X-CSRFToken': csrfToken
             },
             credentials: 'same-origin',
-            redirect: 'follow'  // Follow redirects
+            redirect: 'follow'
         })
         .then(response => {
-            console.log('Response status:', response.status, 'Redirected:', response.redirected);
-            
-            // Check if response is a redirect
-            if (response.redirected) {
-                console.log('Redirecting to:', response.url);
+            // Django redirects after successful form submission
+            // Check if we were redirected to a different URL
+            if (response.redirected || response.url !== window.location.href) {
+                // Success! Redirect to the new item page
                 window.location.href = response.url;
-            } else if (response.ok) {
-                // If not redirected, check the response
-                return response.text().then(html => {
-                    console.log('Response HTML length:', html.length);
-                    
-                    // Check if there are form errors in the response
-                    if (html.includes('form-error') || html.includes('alert-error') || html.includes('This field is required')) {
-                        // Show the form with errors
-                        document.open();
-                        document.write(html);
-                        document.close();
-                        return;
-                    }
-                    
-                    // If response contains a redirect URL in the HTML, extract it
-                    const redirectMatch = html.match(/window\.location\.href\s*=\s*["']([^"']+)["']/);
-                    if (redirectMatch) {
-                        window.location.href = redirectMatch[1];
-                    } else {
-                        // Check for item detail link in success message
-                        const itemLinkMatch = html.match(/href=["']([^"']*item\/\d+[^"']*)["']/);
-                        if (itemLinkMatch) {
-                            window.location.href = itemLinkMatch[1];
-                        } else {
-                            // Fallback: just reload to show messages
-                            window.location.reload();
-                        }
-                    }
-                });
-            } else {
-                // Get error details from response
-                return response.text().then(html => {
-                    console.error('Error response HTML:', html);
-                    throw new Error('Server error: ' + response.status);
-                });
+                return;
             }
+            
+            // If not redirected, there might be form errors
+            // Replace the page content to show errors
+            return response.text().then(html => {
+                document.open();
+                document.write(html);
+                document.close();
+            });
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Form submission error:', error);
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Create Item';
-            alert('Error creating item: ' + error.message + '. Please check the console for details.');
+            submitBtn.textContent = originalText;
+            alert('Error submitting form. Please try again.');
         });
-        
-        e.preventDefault();
     });
 });
 </script>

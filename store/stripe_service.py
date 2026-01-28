@@ -5,8 +5,6 @@ import stripe
 from django.conf import settings
 from decimal import Decimal
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
-
 
 def create_payment_link_for_item(item):
     """
@@ -19,6 +17,9 @@ def create_payment_link_for_item(item):
     """
     if not settings.STRIPE_SECRET_KEY:
         raise ValueError("STRIPE_SECRET_KEY not configured")
+
+    # Set API key at call time (avoids stale settings in long-running processes)
+    stripe.api_key = settings.STRIPE_SECRET_KEY
     
     # Create Product with metadata containing item_id
     product = stripe.Product.create(
@@ -40,8 +41,8 @@ def create_payment_link_for_item(item):
     )
     
     # Create Payment Link
+    # Collect customer name, email, and phone number for pickup coordination
     # Include item_id in metadata for webhook access
-    # Collect customer name and email for notifications
     # Note: Payment Links don't have a direct "max_payments" parameter.
     # We enforce single payment by deactivating the link after first sale via webhook.
     payment_link = stripe.PaymentLink.create(
@@ -54,11 +55,18 @@ def create_payment_link_for_item(item):
         metadata={
             'item_id': str(item.id),
         },
-        # Collect customer information (name and email)
-        # This ensures we have buyer details for email notifications
-        payment_method_collection='if_required',
-        # Enable customer creation to ensure we get name and email
-        customer_creation='if_required',
+        # Collect phone number (for pickup coordination)
+        phone_number_collection={
+            'enabled': True,
+        },
+        # Collect customer details (name and email)
+        custom_fields=[
+            {
+                'key': 'buyer_name',
+                'label': {'type': 'custom', 'custom': 'Full Name'},
+                'type': 'text',
+            },
+        ],
     )
     
     return (

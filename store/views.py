@@ -3,9 +3,12 @@ from django.views.generic import ListView, DetailView, TemplateView, FormView
 from django.contrib import messages
 from django.conf import settings
 from django.urls import reverse_lazy
+import logging
 from .models import Category, Item, ItemImage
 from .forms import ItemCreateForm
 from .stripe_service import create_payment_link_for_item
+
+logger = logging.getLogger(__name__)
 
 
 class ItemListView(ListView):
@@ -93,14 +96,18 @@ class ItemCreateView(FormView):
         
         # Handle image uploads
         images = self.request.FILES.getlist('images')
-        if images:
-            for index, image_file in enumerate(images):
-                ItemImage.objects.create(
-                    item=item,
-                    image=image_file,
-                    sort_order=index,
-                    is_primary=(index == 0)  # First image is primary
-                )
+        if not images:
+            # No images uploaded - this is a validation error
+            form.add_error(None, 'At least one photo is required.')
+            return self.form_invalid(form)
+        
+        for index, image_file in enumerate(images):
+            ItemImage.objects.create(
+                item=item,
+                image=image_file,
+                sort_order=index,
+                is_primary=(index == 0)  # First image is primary
+            )
         
         # Create Stripe Payment Link
         try:
@@ -117,6 +124,11 @@ class ItemCreateView(FormView):
                 f'<a href="{item.get_absolute_url()}" class="alert-link">View item</a>'
             )
         except Exception as e:
+            logger.exception(
+                "Stripe payment link creation failed for item_id=%s title=%r",
+                item.pk,
+                item.title,
+            )
             messages.warning(
                 self.request,
                 f'Item created but Stripe payment link failed: {str(e)}. '
@@ -127,9 +139,15 @@ class ItemCreateView(FormView):
     
     def form_invalid(self, form):
         """Handle form validation errors."""
+        # Log form errors for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Form validation errors: {form.errors}")
+        logger.error(f"Form non-field errors: {form.non_field_errors}")
+        
         messages.error(
             self.request,
-            'Please correct the errors below and try again.'
+            f'Please correct the errors below and try again. Errors: {form.errors}'
         )
         return super().form_invalid(form)
     

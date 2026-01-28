@@ -133,16 +133,17 @@ def handle_checkout_session_completed(session):
         customer_details = session.get('customer_details', {}) or {}
         buyer_name = customer_details.get('name') or 'Customer'
         buyer_email = customer_details.get('email') or session.get('customer_email') or ''
+        buyer_phone = customer_details.get('phone') or ''
         
         # Send email notifications (if email is configured)
-        send_sale_notifications(item, buyer_name, buyer_email)
-        logger.info(f"Item '{item.title}' sold to {buyer_name} ({buyer_email})")
+        send_sale_notifications(item, buyer_name, buyer_email, buyer_phone)
+        logger.info(f"Item '{item.title}' sold to {buyer_name} ({buyer_email}, {buyer_phone})")
     
     # If item is already SOLD, this webhook is a duplicate
     # This is expected and handled gracefully (idempotent)
 
 
-def send_sale_notifications(item, buyer_name, buyer_email):
+def send_sale_notifications(item, buyer_name, buyer_email, buyer_phone=''):
     """
     Send email notifications to buyer and admin when an item is sold.
     
@@ -150,6 +151,7 @@ def send_sale_notifications(item, buyer_name, buyer_email):
         item: The Item object that was sold
         buyer_name: Name of the buyer
         buyer_email: Email address of the buyer
+        buyer_phone: Phone number of the buyer (optional)
     """
     if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
         logger.warning("Email not configured - skipping sale notifications")
@@ -196,6 +198,7 @@ Sold at: {item.sold_at.strftime('%Y-%m-%d %H:%M:%S') if item.sold_at else 'N/A'}
 Buyer Information:
 Name: {buyer_name}
 Email: {buyer_email or 'Not provided'}
+Phone: {buyer_phone or 'Not provided'}
 
 Reminder: buyer has been asked to text Julia on 021 649 477 to arrange pickup.
 
