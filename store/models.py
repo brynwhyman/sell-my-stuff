@@ -52,7 +52,7 @@ class Item(models.Model):
     
     slug = models.SlugField(max_length=200, unique=True, blank=True)
     title = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(blank=True, default='')
     category = models.ForeignKey(
         'Category',
         on_delete=models.SET_NULL,

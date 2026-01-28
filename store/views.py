@@ -76,10 +76,20 @@ class ItemCreateView(FormView):
     
     def form_valid(self, form):
         """Save item and images, create Stripe payment link."""
-        # Save the item
-        item = form.save(commit=False)
-        item.status = Item.STATUS_LIVE
-        item.save()
+        try:
+            # Save the item
+            item = form.save(commit=False)
+            # Ensure description is not empty (model requires it)
+            if not item.description:
+                item.description = 'No description provided'
+            item.status = Item.STATUS_LIVE
+            item.save()
+        except Exception as e:
+            messages.error(
+                self.request,
+                f'Error saving item: {str(e)}'
+            )
+            return self.form_invalid(form)
         
         # Handle image uploads
         images = self.request.FILES.getlist('images')
@@ -114,6 +124,14 @@ class ItemCreateView(FormView):
             )
         
         return redirect('store:item_detail', pk=item.pk)
+    
+    def form_invalid(self, form):
+        """Handle form validation errors."""
+        messages.error(
+            self.request,
+            'Please correct the errors below and try again.'
+        )
+        return super().form_invalid(form)
     
     def get_context_data(self, **kwargs):
         """Add categories to context."""

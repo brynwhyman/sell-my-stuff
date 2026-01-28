@@ -136,12 +136,26 @@ document.addEventListener('DOMContentLoaded', function() {
             redirect: 'follow'  // Follow redirects
         })
         .then(response => {
+            console.log('Response status:', response.status, 'Redirected:', response.redirected);
+            
             // Check if response is a redirect
             if (response.redirected) {
+                console.log('Redirecting to:', response.url);
                 window.location.href = response.url;
             } else if (response.ok) {
                 // If not redirected, check the response
                 return response.text().then(html => {
+                    console.log('Response HTML length:', html.length);
+                    
+                    // Check if there are form errors in the response
+                    if (html.includes('form-error') || html.includes('alert-error') || html.includes('This field is required')) {
+                        // Show the form with errors
+                        document.open();
+                        document.write(html);
+                        document.close();
+                        return;
+                    }
+                    
                     // If response contains a redirect URL in the HTML, extract it
                     const redirectMatch = html.match(/window\.location\.href\s*=\s*["']([^"']+)["']/);
                     if (redirectMatch) {
@@ -158,7 +172,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             } else {
-                throw new Error('Server error: ' + response.status);
+                // Get error details from response
+                return response.text().then(html => {
+                    console.error('Error response HTML:', html);
+                    throw new Error('Server error: ' + response.status);
+                });
             }
         })
         .catch(error => {

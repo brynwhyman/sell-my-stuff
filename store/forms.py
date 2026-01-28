@@ -9,9 +9,10 @@ from decimal import Decimal
 class ItemCreateForm(forms.ModelForm):
     """Form for creating items with mobile-optimized fields."""
     
-    # Make description optional
+    # Make description optional with default empty string
     description = forms.CharField(
         required=False,
+        initial='',
         widget=forms.Textarea(attrs={
             'rows': 4,
             'placeholder': 'Optional description...',
