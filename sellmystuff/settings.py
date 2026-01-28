@@ -198,15 +198,6 @@ ADMIN_EMAIL = config('ADMIN_EMAIL', default='')  # Email address to receive sale
 # Item upload password (simple authentication for mobile upload form)
 ITEM_UPLOAD_PASSWORD = config('ITEM_UPLOAD_PASSWORD', default='')
 
-# Email configuration (uses environment variables; works with SMTP on paid Render plans)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = config('EMAIL_HOST', default='')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='no-reply@example.com')
-
 # Security settings for production
 # Only apply security settings when DEBUG is False (production)
 if not DEBUG:
