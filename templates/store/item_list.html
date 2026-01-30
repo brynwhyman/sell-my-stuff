@@ -42,12 +42,23 @@
         {% endfor %}
     </div>
 
+    <!-- Loading spinner for infinite scroll -->
+    <div id="infinite-scroll-spinner" class="infinite-scroll-spinner" style="display: none;">
+        <div class="spinner"></div>
+        <p>Loading more items...</p>
+    </div>
+
+    <!-- End of items message -->
+    <div id="infinite-scroll-end" class="infinite-scroll-end" style="display: none;">
+        <p>You've reached the end of the list.</p>
+    </div>
+
+    <!-- Error message -->
+    <div id="infinite-scroll-error" class="infinite-scroll-error" style="display: none;"></div>
+
+    <!-- Hidden pagination info for JavaScript to detect if more items exist -->
     {% if is_paginated %}
-        <div class="pagination">
-            {% if page_obj.has_previous %}
-                <a href="?{% if active_category %}category={{ active_category }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
-            {% endif %}
-            <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <div class="pagination" style="display: none;">
             {% if page_obj.has_next %}
                 <a href="?{% if active_category %}category={{ active_category }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
             {% endif %}
@@ -60,4 +71,9 @@
         <p>Check back soon for new items!</p>
     </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/infinite_scroll.js' %}"></script>
 {% endblock %}

@@ -3,6 +3,8 @@ from django.views.generic import ListView, DetailView, TemplateView, FormView
 from django.contrib import messages
 from django.conf import settings
 from django.urls import reverse_lazy
+from django.http import JsonResponse
+from django.urls import reverse
 import logging
 from .models import Category, Item, ItemImage
 from .forms import ItemCreateForm
@@ -39,6 +41,49 @@ class ItemListView(ListView):
         context['categories'] = Category.objects.all().order_by('order', 'name')
         context['active_category'] = self.request.GET.get('category', '')
         return context
+    
+    def render_to_response(self, context, **response_kwargs):
+        """Return JSON for AJAX requests, HTML otherwise."""
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # AJAX request - return JSON
+            items_data = []
+            for item in context['items']:
+                primary_image_url = ''
+                if item.primary_image:
+                    primary_image_url = item.primary_image.image.url
+                
+                items_data.append({
+                    'id': item.id,
+                    'title': item.title,
+                    'price_amount': str(item.price_amount),
+                    'currency': item.currency,
+                    'status': item.status,
+                    'primary_image_url': primary_image_url,
+                    'detail_url': reverse('store:item_detail', kwargs={'pk': item.pk}),
+                    'is_sold': item.status == Item.STATUS_SOLD,
+                })
+            
+            # Get pagination info
+            page_obj = context.get('page_obj')
+            has_next = False
+            next_page = None
+            if page_obj:
+                try:
+                    has_next = page_obj.has_next()
+                    if has_next:
+                        next_page = page_obj.next_page_number()
+                except AttributeError:
+                    # page_obj exists but doesn't have pagination methods
+                    has_next = False
+            
+            return JsonResponse({
+                'items': items_data,
+                'has_next': has_next,
+                'next_page': next_page,
+            })
+        
+        # Regular request - return HTML
+        return super().render_to_response(context, **response_kwargs)
 
 
 class ItemDetailView(DetailView):
