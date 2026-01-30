@@ -751,6 +751,15 @@ footer p {
     font-size: var(--font-size-sm);
 }
 
+footer a {
+    color: white;
+    text-decoration: underline;
+}
+
+footer a:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
+
 /* ===== RESPONSIVE UTILITIES ===== */
 @media (max-width: 767px) {
     .item-detail {
