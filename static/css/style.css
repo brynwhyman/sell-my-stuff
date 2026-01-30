@@ -424,6 +424,25 @@ h3 {
     transition: opacity var(--transition-base);
 }
 
+.item-image-main .item-image-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    background: linear-gradient(135deg, var(--color-border-light) 0%, var(--color-border) 100%);
+    font-size: var(--font-size-base);
+}
+
+/* Remove cursor zoom-in when there's no image (just placeholder) */
+.item-image-main:has(.item-image-placeholder) {
+    cursor: default;
+}
+
 /* ===== LIGHTBOX (image zoom) ===== */
 .lightbox {
     position: fixed;

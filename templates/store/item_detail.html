@@ -27,7 +27,9 @@
                 <img class="lightbox-image" src="" alt="">
             </div>
         {% else %}
-            <div class="item-image-placeholder">No Image</div>
+            <div class="item-image-main">
+                <div class="item-image-placeholder">No Image</div>
+            </div>
         {% endif %}
     </div>
     
@@ -62,5 +64,7 @@
 {% endblock %}
 
 {% block extra_js %}
+{% if item.images.all %}
 <script src="{% static 'js/lightbox.js' %}"></script>
+{% endif %}
 {% endblock %}
